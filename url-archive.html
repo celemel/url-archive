@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>マイリンク</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FFFFFF;
+    --ink: #202124;
+    --ink-soft: #5F6368;
+    --border: #E1E3E6;
+    --accent: #1A73E8;
+    --accent-soft: #1A73E812;
+    --danger: #C5221F;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #131314;
+      --ink: #E8E9EA;
+      --ink-soft: #9AA0A6;
+      --border: #3C4043;
+      --accent: #8AB4F8;
+      --accent-soft: #8AB4F81A;
+      --danger: #F28B82;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131314;
+    --ink: #E8E9EA;
+    --ink-soft: #9AA0A6;
+    --border: #3C4043;
+    --accent: #8AB4F8;
+    --accent-soft: #8AB4F81A;
+    --danger: #F28B82;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  }
+
+  header {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px 14px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .intake-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .pill-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    background: none;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .pill-btn:active { background: var(--accent-soft); }
+  .pill-btn.secondary {
+    border-color: var(--border);
+    color: var(--ink-soft);
+  }
+  input[type="file"] { display: none; }
+
+  .intake-status {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 6px 0 4px;
+  }
+  .feedback {
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: none;
+    margin-top: 6px;
+  }
+  .feedback.show { display: block; }
+  .feedback.ok { background: var(--accent-soft); color: var(--accent); }
+  .feedback.warn { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 14px;
+  }
+  .search {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 15px;
+    font-family: inherit;
+  }
+  .search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .search::placeholder { color: var(--ink-soft); }
+  .count {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .group-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 24px 0 4px;
+  }
+  .group-title:first-of-type { margin-top: 4px; }
+
+  .subgroup-title {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 12px 0 2px;
+  }
+
+  ul.entries { list-style: none; margin: 0; padding: 0; }
+  .entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .entry a.open {
+    flex: 1;
+    display: block;
+    padding: 12px 2px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .entry a.open:active { opacity: 0.7; }
+  .entry-title {
+    font-size: 15px;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .del-btn {
+    border: none;
+    background: none;
+    color: var(--ink-soft);
+    font-size: 20px;
+    line-height: 1;
+    padding: 8px;
+    cursor: pointer;
+  }
+  .del-btn:active { color: var(--danger); }
+
+  .empty {
+    text-align: center;
+    padding: 60px 16px;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  footer {
+    max-width: 640px;
+    margin: 26px auto 0;
+    padding: 14px 20px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+  }
+  .clear-btn {
+    border: none;
+    background: none;
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    padding: 7px 4px;
+  }
+  .clear-btn:active { color: var(--danger); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>マイリンク</h1>
+</header>
+
+<main>
+  <div class="intake-row">
+    <label class="pill-btn" for="folderInput">まとめて選ぶ</label>
+    <input type="file" id="folderInput" webkitdirectory multiple>
+    <label class="pill-btn secondary" for="fileInput">個別に選ぶ</label>
+    <input type="file" id="fileInput" multiple>
+  </div>
+  <span class="intake-status" id="intakeStatus">まだ何も読み込んでいません</span>
+  <div class="feedback" id="feedback"></div>
+
+  <div class="toolbar">
+    <input type="text" class="search" id="searchInput" placeholder="検索">
+    <span class="count" id="countLabel"></span>
+  </div>
+
+  <div id="listArea"></div>
+</main>
+
+<footer>
+  <button class="clear-btn" id="clearBtn">全て削除</button>
+</footer>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'urlArchive.entries.v1';
+  var entries = [];
+
+  function loadEntries() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      entries = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      entries = [];
+    }
+  }
+
+  function saveEntries() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    } catch (e) {
+      showFeedback('保存に失敗しました', 'warn');
+    }
+  }
+
+  function showFeedback(msg, kind) {
+    var el = document.getElementById('feedback');
+    el.textContent = msg;
+    el.className = 'feedback show ' + (kind || 'ok');
+    clearTimeout(el._t);
+    el._t = setTimeout(function(){ el.classList.remove('show'); }, 5000);
+  }
+
+  function parseFilename(name) {
+    var base = name.replace(/\.[^.]+$/, '');
+
+    var m = base.match(/^\((\d+)\)(\d{4})\.(\d{1,2})(.*)$/);
+    if (m) {
+      return {
+        seq: parseInt(m[1], 10),
+        year: parseInt(m[2], 10),
+        month: parseInt(m[3], 10),
+        title: m[4].trim() || base
+      };
+    }
+
+    m = base.match(/^_?(\d+)_(\d{4})_(\d{1,2})(.*)$/);
+    if (m) {
+      return {
+        seq: parseInt(m[1], 10),
+        year: parseInt(m[2], 10),
+        month: parseInt(m[3], 10),
+        title: m[4].trim() || base
+      };
+    }
+
+    return { seq: null, year: null, month: null, title: base };
+  }
+
+  function buildDisplayTitle(e) {
+    var prefix = '';
+    if (e.seq !== null && e.seq !== undefined) prefix += '(' + e.seq + ')';
+    if (e.year && e.month) prefix += e.year + '.' + e.month;
+    return prefix + (e.title || e.filename);
+  }
+
+  function extractUrl(text) {
+    var m = text.match(/URL\s*=\s*(.+)/i);
+    if (!m) return null;
+    return m[1].trim();
+  }
+
+  function readFileAsText(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result); };
+      reader.onerror = function(){ reject(new Error('read failed')); };
+      reader.readAsText(file, 'utf-8');
+    });
+  }
+
+  function handleFiles(fileList) {
+    var files = Array.prototype.filter.call(fileList, function(f){
+      return /\.url$/i.test(f.name);
+    });
+    if (!files.length) return;
+    document.getElementById('intakeStatus').textContent = '読み込み中…';
+
+    var existingUrls = {};
+    entries.forEach(function(e){ existingUrls[e.url] = true; });
+
+    var added = 0, skippedDup = 0, failed = 0;
+
+    Promise.all(files.map(function(file){
+      return readFileAsText(file).then(function(text){
+        var url = extractUrl(text);
+        if (!url) { failed++; return; }
+        if (existingUrls[url]) { skippedDup++; return; }
+        existingUrls[url] = true;
+        var meta = parseFilename(file.name);
+        entries.push({
+          url: url,
+          filename: file.name,
+          title: meta.title,
+          year: meta.year,
+          month: meta.month,
+          seq: meta.seq,
+          addedAt: Date.now()
+        });
+        added++;
+      }).catch(function(){ failed++; });
+    })).then(function(){
+      saveEntries();
+      render();
+      var parts = [];
+      if (added) parts.push(added + '件 追加');
+      if (skippedDup) parts.push(skippedDup + '件 重複のためスキップ');
+      if (failed) parts.push(failed + '件 読み取り失敗');
+      document.getElementById('intakeStatus').textContent =
+        entries.length + '件を保管中';
+      showFeedback(parts.join(' / ') || '変化はありませんでした', failed ? 'warn' : 'ok');
+    });
+  }
+
+  function monthLabel(year, month) {
+    if (!year || !month) return 'その他';
+    return year + '年' + month + '月';
+  }
+
+  function groupKey(e) {
+    if (!e.year || !e.month) return 999999;
+    return e.year * 100 + e.month;
+  }
+
+  function render() {
+    var query = document.getElementById('searchInput').value.trim().toLowerCase();
+    var filtered = entries.filter(function(e){
+      if (!query) return true;
+      return (e.title || '').toLowerCase().indexOf(query) !== -1 ||
+             (e.filename || '').toLowerCase().indexOf(query) !== -1 ||
+             buildDisplayTitle(e).toLowerCase().indexOf(query) !== -1;
+    });
+
+    document.getElementById('countLabel').textContent =
+      filtered.length === entries.length
+        ? entries.length + '件'
+        : filtered.length + ' / ' + entries.length + '件';
+
+    var listArea = document.getElementById('listArea');
+    listArea.innerHTML = '';
+
+    if (!entries.length) {
+      listArea.innerHTML = '<div class="empty">まだ何も登録されていません</div>';
+      return;
+    }
+    if (!filtered.length) {
+      listArea.innerHTML = '<div class="empty">一致する項目がありません</div>';
+      return;
+    }
+
+    filtered.sort(function(a, b){
+      var gk = groupKey(b) - groupKey(a);
+      if (gk !== 0) return gk;
+      var ta = (a.title || '').localeCompare(b.title || '', 'ja');
+      if (ta !== 0) return ta;
+      var sa = a.seq == null ? -1 : a.seq;
+      var sb = b.seq == null ? -1 : b.seq;
+      return sa - sb;
+    });
+
+    var currentGroup = null;
+    var currentTitle = null;
+    var ul = null;
+
+    filtered.forEach(function(e){
+      var gk = groupKey(e);
+      if (gk !== currentGroup) {
+        currentGroup = gk;
+        currentTitle = null;
+        var h = document.createElement('div');
+        h.className = 'group-title';
+        h.textContent = monthLabel(e.year, e.month);
+        listArea.appendChild(h);
+      }
+      if (e.title !== currentTitle) {
+        currentTitle = e.title;
+        var sh = document.createElement('div');
+        sh.className = 'subgroup-title';
+        sh.textContent = e.title || e.filename;
+        listArea.appendChild(sh);
+        ul = document.createElement('ul');
+        ul.className = 'entries';
+        listArea.appendChild(ul);
+      }
+      var li = document.createElement('li');
+      li.className = 'entry';
+
+      var a = document.createElement('a');
+      a.className = 'open';
+      a.href = e.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+
+      var t = document.createElement('div');
+      t.className = 'entry-title';
+      t.textContent = buildDisplayTitle(e);
+      a.appendChild(t);
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'del-btn';
+      delBtn.setAttribute('aria-label', '削除');
+      delBtn.textContent = '×';
+      delBtn.addEventListener('click', function(ev){
+        ev.preventDefault();
+        entries = entries.filter(function(x){ return x.url !== e.url; });
+        saveEntries();
+        render();
+        document.getElementById('intakeStatus').textContent = entries.length + '件を保管中';
+      });
+
+      li.appendChild(a);
+      li.appendChild(delBtn);
+      ul.appendChild(li);
+    });
+  }
+
+  document.getElementById('fileInput').addEventListener('change', function(ev){
+    handleFiles(ev.target.files);
+    ev.target.value = '';
+  });
+
+  document.getElementById('folderInput').addEventListener('change', function(ev){
+    handleFiles(ev.target.files);
+    ev.target.value = '';
+  });
+
+  document.getElementById('searchInput').addEventListener('input', render);
+
+  document.getElementById('clearBtn').addEventListener('click', function(){
+    if (!entries.length) return;
+    if (confirm('保管している ' + entries.length + '件すべてを削除しますか？')) {
+      entries = [];
+      saveEntries();
+      render();
+      document.getElementById('intakeStatus').textContent = 'まだ何も読み込んでいません';
+    }
+  });
+
+  loadEntries();
+  if (entries.length) {
+    document.getElementById('intakeStatus').textContent = entries.length + '件を保管中';
+  }
+  render();
+})();
+</script>
+
+</body>
+</html>
